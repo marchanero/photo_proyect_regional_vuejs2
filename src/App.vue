@@ -1,16 +1,19 @@
 <template>
   <div id="app">
     <Sociodemografico />
+    <capturador_fotos/>
   </div>
 </template>
 
 <script>
 import Sociodemografico from "./components/Sociodemografico.vue";
+import capturador_fotos from './components/CapturaFotos.vue';
 
 export default {
   name: "App",
   components: {
     Sociodemografico,
+    capturador_fotos,
   },
 };
 </script>

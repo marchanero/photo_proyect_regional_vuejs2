@@ -373,13 +373,13 @@ export default {
         poblacion: " ",
         lugarderesidencia: " ",
       },
-    };
+    }
   },
   //Creating a local storage for the variables in the questionaire.
   mounted() {
-    if (localStorage.id_participante) {
-      this.id_participante = localStorage.User.id_participante;
-    }
+    // if (localStorage.id_participante) {
+    //   this.User.id_participante = localStorage.User.id_participante;
+    // }
     // if (localStorage.sexo) {
     //   this.User.sexo = localStorage.sexo;
     // }
@@ -407,35 +407,25 @@ export default {
   },
   watch: {
     id_participante(newId_participante) {
-      localStorage.id_participante = JSON.stringify(newId_participante);
+      localStorage.setItem('id_participante', JSON.stringify(newId_participante));
+      console.log("Cambia el valor")
     },
   },
   methods: {
     addToAPI() {
-      let user = {
-        id_participante: this.User.id_participante,
-        sexo: this.User.sexo,
-        etnia: this.User.etnia,
-        estadocivil: this.User.estadocivil,
-        niveleducativo: this.User.niveleducativo,
-        profesion: this.User.profesion,
-        situacionprofesional: this.User.situacionprofesional,
-        poblacion: this.User.poblacion,
-        lugarderesidencia: this.User.residencia,
-      };
-      console.log(JSON.stringify(user));
+      console.log(JSON.stringify(this.User));
       axios
         .post("/users", {
           id: null,
-          id_participante: user.id_participante,
-          sexo: user.sexo,
-          etnia: user.etnia,
-          estadocivil: user.estadocivil,
-          niveleducativo: user.niveleducativo,
-          profesion: user.profesion,
-          situacionprofesional: user.situacionprofesional,
-          poblacion: user.poblacion,
-          lugarderesidencia: user.lugarderesidencia,
+          id_participante: this.User.id_participante,
+          sexo: this.User.sexo,
+          etnia: this.User.etnia,
+          estadocivil: this.User.estadocivil,
+          niveleducativo: this.User.niveleducativo,
+          profesion: this.User.profesion,
+          situacionprofesional: this.User.situacionprofesional,
+          poblacion: this.User.poblacion,
+          lugarderesidencia: this.User.lugarderesidencia,
         })
         .then((response) => console.log(response))
         .catch((error) => console.error(error));
