@@ -1,0 +1,123 @@
+version: '3'
+services:
+  photoproyect:
+    container_name: photo-web-developing
+    build:
+      context: .
+      dockerfile: Dockerfile
+      #target: 'develop-stage'
+    expose:
+      - 8000
+    ports:
+      - 8000:8000
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.photoproyect-secure.entrypoints=websecure"
+      - "traefik.http.routers.photoproyect-secure.rule=Host(`proyectofotos.emosys.site`)"
+      - "traefik.http.routers.photoproyect-secure.service=photoproyect"
+      - "traefik.http.services.photoproyect.loadbalancer.server.port=8000"
+    volumes:
+      - '.:/app'
+      - '/app/node_modules'
+    networks:
+      - proxy
+  
+  flaskapi:
+    image: photo_regional_flask_api
+    container_name: photo_regional_flask_api
+    build: ./api_fast
+    restart: always
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.flaskapi-secure.entrypoints=websecure"
+      - "traefik.http.routers.flaskapi-secure.rule=Host(`api-test.emosys.site`)"
+      - "traefik.http.routers.flaskapi-secure.service=flaskapi"
+      - "traefik.http.services.flaskapi.loadbalancer.server.port=5000"
+    volumes:
+      - flaskapi:/app --name app_dir
+    environment: 
+      FLASK_ENV: development
+    ports: 
+      - 5000:5000
+    expose: 
+      - 5000
+    networks:
+      - proxy
+  
+  fastapi:
+    image: fast_api_photos
+    container_name: photo_regional_fast_api
+    build: ./fast_api
+    #build: ./FastAPIDocker
+    restart: always
+    volumes:
+      - fastapi:/app --name app_dir 
+    ports: 
+      - 5001:80
+    networks:
+      - proxy
+    command: ["/start-reload.sh"]
+    #command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--reload", "--port", "80", "--reload-dir", "/app"]
+    #command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--debug", "--port", "80", "--reload-dir", "/app"]
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.fastapi-secure.entrypoints=websecure"
+      - "traefik.http.routers.fastapi-secure.rule=Host(`api.emosys.site`)"
+      - "traefik.http.routers.fastapi-secure.service=fastapi"
+      - "traefik.http.services.fastapi.loadbalancer.server.port=80"
+    
+
+  mariadb:
+    image: mariadb:latest
+    container_name: photo_regional_mariadb_autentication
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: orangepi.
+      #MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: false
+      MARIADB_USER: marchanero
+      MARIADB_PASSWORD: orangepi.mariadb
+    volumes:
+      - mariadb_storage:/var/lib/mysql
+    ports:
+      - 3306:3306
+    expose:
+      - 3306
+    networks:
+      - proxy
+      - default
+
+  mongodb:
+    image: mongo
+    container_name: photo_regional_mongoDB
+    restart: always
+    environment:
+      - MONGODB_ADVERTISED_HOSTNAME= mongodb-primary
+      - MONGO_INITDB_ROOT_USERNAME= root
+      - MONGO_INITDB_ROOT_PASSWORD= orangepi.mongodb
+      - MONGO_INITDB_DATABASE= root-db
+      #- MONGODB_REPLICA_SET_MODE=primary
+      - MONGODB_ROOT_PASSWORD=orangepi.mongodb
+      #- MONGODB_REPLICA_SET_KEY=replicasetkey123
+    volumes:
+      - mongo-main:/data/db
+    expose:
+      - 27017
+    ports:
+      - 27017:27017
+    networks:
+      - proxy
+      - default
+
+volumes:
+  flaskapi:
+  fastapi:
+  mongo-main:
+  mariadb_storage:
+
+networks:
+  proxy:
+    external: true
+  
